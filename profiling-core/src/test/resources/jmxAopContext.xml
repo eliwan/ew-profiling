@@ -1,0 +1,75 @@
+<!--
+  ~ This file is part of ew-profiling, a library for in-app, runtime profiling.
+  ~ Copyright (c) Eliwan bvba, Belgium, http://eliwan.be
+  ~
+  ~ The software is available in open source according to the Apache License, Version 2.0.
+  ~ For full licensing details, see LICENSE.txt in the project root.
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+    <context:annotation-config />
+
+
+    <!-- definition of our service bean -->
+    <bean name="service" class="be.eliwan.profiling.jmx.ExampleService"/>
+
+
+    <!-- apply profiling to our service bean using AOP -->
+
+    <!-- @extract-start UseAopForProfiling, Using AOP to profile services.-->
+    <bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <property name="beanNames" value="service*"/>
+        <property name="interceptorNames">
+            <list>
+                <value>myMethodProfilingInterceptor</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean name="myMethodProfilingInterceptor" class="be.eliwan.profiling.aop.MethodProfilingInterceptor">
+        <property name="group" value="test" />
+        <property name="profilingContainer" ref="profilingTest" />
+    </bean>
+    <!-- @extract-end -->
+
+
+    <!-- JMX profiling bean definition -->
+
+    <!-- @extract-start DefineProfilingContainer, Define a profiling container.-->
+    <bean name="profilingTest" class="be.eliwan.profiling.service.ProfilingContainer">
+        <property name="ringSize" value="128" />
+    </bean>
+    <!-- @extract-end -->
+
+
+    <!-- MBean server definition -->
+
+    <!-- @extract-start SetupMBeanServer, Setup an MBean server to access profiling data.-->
+    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <property name="locateExistingServerIfPossible" value="true"/>
+    </bean>
+
+    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
+        <property name="beans">
+            <map>
+                <entry key="bean:name=profilingAopTest" value-ref="profilingTest"/>
+            </map>
+        </property>
+        <property name="assembler">
+            <bean class="org.springframework.jmx.export.assembler.InterfaceBasedMBeanInfoAssembler">
+                <property name="managedInterfaces" value="be.eliwan.profiling.api.ProfilingBean" />
+            </bean>
+        </property>
+    </bean>
+    <!-- @extract-end -->
+
+</beans>
+
+
+

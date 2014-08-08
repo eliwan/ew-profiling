@@ -1,0 +1,48 @@
+<!--
+  ~ This file is part of ew-profiling, a library for in-app, runtime profiling.
+  ~ Copyright (c) Eliwan bvba, Belgium, http://eliwan.be
+  ~
+  ~ The software is available in open source according to the Apache License, Version 2.0.
+  ~ For full licensing details, see LICENSE.txt in the project root.
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+    <context:annotation-config />
+
+
+    <!-- base definition of our service bean -->
+    <bean name="baseService" class="be.eliwan.profiling.jmx.ExampleService"/>
+    <bean name="service" class="be.eliwan.profiling.jmx.ExampleProfiledService"/>
+
+    <bean name="profilingTest" class="be.eliwan.profiling.service.ProfilingContainer">
+        <property name="ringSize" value="128" />
+    </bean>
+
+
+
+    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <property name="locateExistingServerIfPossible" value="true"/>
+    </bean>
+
+    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
+        <property name="beans">
+            <map>
+                <entry key="bean:name=profilingTest" value-ref="profilingTest"/>
+            </map>
+        </property>
+        <property name="assembler">
+            <bean class="org.springframework.jmx.export.assembler.InterfaceBasedMBeanInfoAssembler">
+                <property name="managedInterfaces" value="be.eliwan.profiling.api.ProfilingBean" />
+            </bean>
+        </property>
+    </bean>
+
+</beans>
+
+
+
