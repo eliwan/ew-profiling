@@ -13,10 +13,10 @@
     <parent>
     <groupId>be.eliwan</groupId>
     <artifactId>ew-profiling</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     </parent>
     <artifactId>ew-profiling-api</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <name>profiling-api</name>
     <description>profiling-api</description>
