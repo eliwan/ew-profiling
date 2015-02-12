@@ -33,12 +33,27 @@ public class ProfilingInvocationHandler implements InvocationHandler {
     @Override
     // CHECKSTYLE THROWS_THROWABLE: OFF
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        long start = System.currentTimeMillis();
-        try {
+        if (isGetterOrSetter(method)) {
             return method.invoke(delegate, args);
-        } finally {
-            ProfilingDriver.register(groupPrefix + method.getName(), System.currentTimeMillis() - start);
+        } else {
+            long start = System.currentTimeMillis();
+            try {
+                return method.invoke(delegate, args);
+            } finally {
+                ProfilingDriver.register(groupPrefix + method.getName(), System.currentTimeMillis() - start);
+            }
         }
     }
     // CHECKSTYLE THROWS_THROWABLE: ON
+
+    private boolean isGetterOrSetter(Method method) {
+        try {
+            String methodName = method.getName();
+            return (methodName.startsWith("get") && !("getResultSet".equals(methodName) || "getMoreResults".equals(methodName)))
+                    || methodName.startsWith("is") || methodName.startsWith("set");
+        } catch (Exception ex) {
+            return false; // just in case, better be safe than sorry
+        }
+    }
+
 }

@@ -35,28 +35,42 @@ public class ConnectionInvocationHandler implements InvocationHandler {
     @Override
     // CHECKSTYLE THROWS_THROWABLE: OFF
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        long start = System.currentTimeMillis();
-        try {
-            if ("prepareCall".equals(method.getName())) {
-                CallableStatement callableStatement = (CallableStatement) method.invoke(delegate, args);
-                return Proxy.newProxyInstance(callableStatement.getClass().getClassLoader(),
-                        new Class[] {PreparedStatement.class},
-                        new ProfilingInvocationHandler("CallableStatement.", callableStatement));
-            } else if ("prepareStatement".equals(method.getName())) {
-                PreparedStatement preparedStatement = (PreparedStatement) method.invoke(delegate, args);
-                return Proxy.newProxyInstance(preparedStatement.getClass().getClassLoader(),
-                        new Class[] {PreparedStatement.class},
-                        new ProfilingInvocationHandler("PreparedStatement.", preparedStatement));
-            } else if ("createStatement".equals(method.getName())) {
-                Statement statement = (Statement) method.invoke(delegate, args);
-                return Proxy.newProxyInstance(statement.getClass().getClassLoader(),
-                        new Class[] {PreparedStatement.class},
-                        new ProfilingInvocationHandler("Statement.", statement));
-            }
+        if (isGetterOrSetter(method)) {
             return method.invoke(delegate, args);
-        } finally {
-            ProfilingDriver.register("Connection." + method.getName(), System.currentTimeMillis() - start);
+        } else {
+            long start = System.currentTimeMillis();
+            try {
+                if ("prepareCall".equals(method.getName())) {
+                    CallableStatement callableStatement = (CallableStatement) method.invoke(delegate, args);
+                    return Proxy.newProxyInstance(callableStatement.getClass().getClassLoader(),
+                            new Class[]{PreparedStatement.class},
+                            new ProfilingInvocationHandler("CallableStatement.", callableStatement));
+                } else if ("prepareStatement".equals(method.getName())) {
+                    PreparedStatement preparedStatement = (PreparedStatement) method.invoke(delegate, args);
+                    return Proxy.newProxyInstance(preparedStatement.getClass().getClassLoader(),
+                            new Class[]{PreparedStatement.class},
+                            new ProfilingInvocationHandler("PreparedStatement.", preparedStatement));
+                } else if ("createStatement".equals(method.getName())) {
+                    Statement statement = (Statement) method.invoke(delegate, args);
+                    return Proxy.newProxyInstance(statement.getClass().getClassLoader(),
+                            new Class[]{PreparedStatement.class},
+                            new ProfilingInvocationHandler("Statement.", statement));
+                }
+                return method.invoke(delegate, args);
+            } finally {
+                ProfilingDriver.register("Connection." + method.getName(), System.currentTimeMillis() - start);
+            }
         }
     }
     // CHECKSTYLE THROWS_THROWABLE: ON
+
+    private boolean isGetterOrSetter(Method method) {
+        try {
+            String methodName = method.getName();
+            return methodName.startsWith("get") || methodName.startsWith("is") || methodName.startsWith("set") || "clearWarnings".equals(methodName);
+        } catch (Exception ex) {
+            return false; // just in case, better be safe than sorry
+        }
+    }
+
 }
