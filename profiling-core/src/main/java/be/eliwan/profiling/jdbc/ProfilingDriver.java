@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 public class ProfilingDriver implements Driver {
 
     private static final String PREFIX = "profiling:";
+    private static final String PREFIX_ALT = "jdbc:profiling:";
 
     private static final List<ProfilingListener> LISTENERS = new CopyOnWriteArrayList<ProfilingListener>();
 
@@ -63,7 +64,13 @@ public class ProfilingDriver implements Driver {
         if (acceptsURL(s)) {
             long start = System.currentTimeMillis();
             try {
-                Connection connection = DriverManager.getConnection(s.substring(PREFIX.length()), properties);
+                String realUrl = "";
+                if (s.startsWith(PREFIX_ALT)) {
+                    realUrl = s.substring(PREFIX_ALT.length());
+                } else {
+                    realUrl = s.substring(PREFIX.length());
+                }
+                Connection connection = DriverManager.getConnection(realUrl, properties);
                 if (null != connection) {
                     return (Connection) Proxy.newProxyInstance(connection.getClass().getClassLoader(),
                             new Class[] {Connection.class},
@@ -78,7 +85,7 @@ public class ProfilingDriver implements Driver {
 
     @Override
     public boolean acceptsURL(String s) throws SQLException {
-        return s.startsWith(PREFIX);
+        return s.startsWith(PREFIX) || s.startsWith(PREFIX_ALT);
     }
 
     @Override
