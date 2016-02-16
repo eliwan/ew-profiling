@@ -11,9 +11,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>be.eliwan</groupId>
-        <artifactId>ew-profiling</artifactId>
-        <version>1.2-SNAPSHOT</version>
+    <groupId>be.eliwan</groupId>
+    <artifactId>ew-profiling</artifactId>
+    <version>1.2-SNAPSHOT</version>
     </parent>
     <artifactId>ew-profiling-api</artifactId>
 
