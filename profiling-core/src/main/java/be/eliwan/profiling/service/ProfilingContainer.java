@@ -12,11 +12,11 @@ import be.eliwan.profiling.api.GroupData;
 import be.eliwan.profiling.api.ProfilingBean;
 import be.eliwan.profiling.api.ProfilingData;
 import be.eliwan.profiling.api.ProfilingSink;
-import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventHandler;
-import com.lmax.disruptor.MultiThreadedClaimStrategy;
 import com.lmax.disruptor.RingBuffer;
+import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
+import com.lmax.disruptor.dsl.ProducerType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,8 +25,8 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -39,7 +39,7 @@ public class ProfilingContainer implements ProfilingBean, ProfilingSink {
     private static final GroupDataComparator GROUP_DATA_COMPARATOR = new GroupDataComparator();
 
     private int ringSize = 1024; // must be a power of two
-    private ExecutorService executorService;
+    private ThreadFactory threadFactory;
     private Disruptor<Registration> disruptor;
     private RingBuffer<Registration> ringBuffer;
 
@@ -61,11 +61,12 @@ public class ProfilingContainer implements ProfilingBean, ProfilingSink {
      */
     @PostConstruct
     public void start() {
-        executorService = Executors.newCachedThreadPool();
+        threadFactory = Executors.defaultThreadFactory();
         disruptor = new Disruptor<Registration>(Registration.FACTORY,
-                executorService,
-                new MultiThreadedClaimStrategy(ringSize),
-                new BlockingWaitStrategy());
+                ringSize,
+                threadFactory,
+                ProducerType.MULTI,
+                new SleepingWaitStrategy());
         disruptor.handleEventsWith(new ContainerEventHandler());
         ringBuffer = disruptor.start();
     }
@@ -76,7 +77,6 @@ public class ProfilingContainer implements ProfilingBean, ProfilingSink {
     @PreDestroy
     public void shutdown() {
         disruptor.shutdown();
-        executorService.shutdownNow();
     }
 
     @Override

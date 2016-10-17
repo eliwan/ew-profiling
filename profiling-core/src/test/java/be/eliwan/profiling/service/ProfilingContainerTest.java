@@ -21,7 +21,7 @@ public class ProfilingContainerTest {
 
     private static final int ITERATIONS = 10000000;
     private static final int PREFIX_DIVISOR = 3700000;
-    private static final int THREADS = 4; // system slows down a lot when higher than the number of cores
+    private static final int THREADS = 4;
 
     private static final String[] GROUP = { "zero", "g1", "g2", "group 3", "four" };
     private static final String[] PREFIX = { "", "more.", "another-", "xxx-", "[({?" };
@@ -29,7 +29,7 @@ public class ProfilingContainerTest {
     @Test
     public void profilingContainerTest() throws Exception {
         ProfilingContainer container = new ProfilingContainer();
-        container.setRingSize(1024);
+        container.setRingSize(128);
         container.start();
 
         Thread[] threads = new Thread[THREADS];
