@@ -28,7 +28,7 @@ public class ProfilingDriver implements Driver {
     private static final String PREFIX = "profiling:";
     private static final String PREFIX_ALT = "jdbc:profiling:";
 
-    private static final List<ProfilingListener> LISTENERS = new CopyOnWriteArrayList<ProfilingListener>();
+    private static final List<ProfilingListener> LISTENERS = new CopyOnWriteArrayList<>();
 
     static {
         try {

@@ -16,11 +16,7 @@ import com.lmax.disruptor.EventFactory;
 public class Registration {
 
     /** Object factory to pre-fill the ring buffer. */
-    public static final EventFactory<Registration> FACTORY = new EventFactory<Registration>() {
-        public Registration newInstance() {
-            return new Registration();
-        }
-    };
+    public static final EventFactory<Registration> FACTORY = Registration::new;
 
     private String group;
      private long duration;

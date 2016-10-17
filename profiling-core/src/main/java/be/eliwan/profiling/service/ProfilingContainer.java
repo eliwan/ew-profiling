@@ -43,8 +43,7 @@ public class ProfilingContainer implements ProfilingBean, ProfilingSink {
     private Disruptor<Registration> disruptor;
     private RingBuffer<Registration> ringBuffer;
 
-    private final Map<String, OneContainerContainer> groupData =
-            new ConcurrentHashMap<String, OneContainerContainer>();
+    private final Map<String, OneContainerContainer> groupData = new ConcurrentHashMap<>();
     private OneContainer total = CLEAR;
 
     /**
@@ -62,7 +61,7 @@ public class ProfilingContainer implements ProfilingBean, ProfilingSink {
     @PostConstruct
     public void start() {
         threadFactory = Executors.defaultThreadFactory();
-        disruptor = new Disruptor<Registration>(Registration.FACTORY,
+        disruptor = new Disruptor<>(Registration.FACTORY,
                 ringSize,
                 threadFactory,
                 ProducerType.MULTI,
@@ -100,7 +99,7 @@ public class ProfilingContainer implements ProfilingBean, ProfilingSink {
 
     @Override
     public List<GroupData> getGroupData() {
-        List<GroupData> result = new ArrayList<GroupData>();
+        List<GroupData> result = new ArrayList<>();
         boolean done = false;
         while (!done) {
             try {
