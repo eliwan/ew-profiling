@@ -15,7 +15,7 @@ There is a profiling JDBC driver which can be used to profile JDBC
 access.
 
 
-[Main site with documentation](http://www/eliwan.be/oss/ew-profiling/)
+[Main site with documentation](http://www.eliwan.be/oss/ew-profiling/)
 
 [javadoc](http://joachimvda.github.io/ew-profiling/)
 
