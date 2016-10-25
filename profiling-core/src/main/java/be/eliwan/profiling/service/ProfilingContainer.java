@@ -12,9 +12,9 @@ import be.eliwan.profiling.api.GroupData;
 import be.eliwan.profiling.api.ProfilingBean;
 import be.eliwan.profiling.api.ProfilingData;
 import be.eliwan.profiling.api.ProfilingSink;
+import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.RingBuffer;
-import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 
@@ -38,7 +38,7 @@ public class ProfilingContainer implements ProfilingBean, ProfilingSink {
     private static final OneContainer CLEAR = new OneContainer(0, 0);
     private static final GroupDataComparator GROUP_DATA_COMPARATOR = new GroupDataComparator();
 
-    private int ringSize = 1024; // must be a power of two
+    private int ringSize = 128; // must be a power of two
     private ThreadFactory threadFactory;
     private Disruptor<Registration> disruptor;
     private RingBuffer<Registration> ringBuffer;
@@ -65,7 +65,7 @@ public class ProfilingContainer implements ProfilingBean, ProfilingSink {
                 ringSize,
                 threadFactory,
                 ProducerType.MULTI,
-                new SleepingWaitStrategy());
+                new BlockingWaitStrategy());
         disruptor.handleEventsWith(new ContainerEventHandler());
         ringBuffer = disruptor.start();
     }

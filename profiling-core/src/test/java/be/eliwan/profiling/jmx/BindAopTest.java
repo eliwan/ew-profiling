@@ -9,7 +9,6 @@
 package be.eliwan.profiling.jmx;
 
 import be.eliwan.profiling.service.OneContainer;
-import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +17,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test to verify that the AOP binding works (building on from BindJMXTest).
@@ -42,8 +43,10 @@ public class BindAopTest {
         service.doSomething(2);
         service.doSomething(3);
 
+        Thread.sleep(100); // just give other threads the chance to update the counters
+
         System.out.println("" + mBeanServer.getAttribute(mbean, "Total"));
-        Assert.assertEquals(3, ((OneContainer) mBeanServer.getAttribute(mbean, "Total")).getInvocationCount());
+        assertThat(((OneContainer) mBeanServer.getAttribute(mbean, "Total")).getInvocationCount()).isEqualTo(3);
         System.out.println("" + mBeanServer.getAttribute(mbean, "GroupData"));
 
         //Thread.sleep(1000000000); // use this to test whether you can connect using JConsole
