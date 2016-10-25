@@ -44,6 +44,10 @@ public class ProfilingDriverTest {
             public void register(String group, long durationMillis) {
                 profilingContainer.register(group, durationMillis);
             }
+            @Override
+            public void registerQuery(String group, String query, long durationMillis) {
+                profilingContainer.register(group + ":" + query, durationMillis);
+            }
         });
 
         connection = DriverManager.getConnection("profiling:jdbc:hsqldb:mem:testdb", "sa", "");
@@ -88,13 +92,15 @@ public class ProfilingDriverTest {
 
         Thread.sleep(100); // give profiling container time to summarize data
         groupsData = profilingContainer.getGroupData();
-        assertThat(groupsData).hasSize(3);
+        assertThat(groupsData).hasSize(6); // 3 normal, 3 with query
         assertThat(groupsData.toString()).contains(
                 "[GroupContainer{group='Connection.createStatement', OneContainer{invocationCount=3");
         assertThat(groupsData.toString()).contains(
                 "GroupContainer{group='Statement.execute', OneContainer{invocationCount=3");
         assertThat(groupsData.toString()).contains(
                 "GroupContainer{group='Statement.getResultSet', OneContainer{invocationCount=3");
+        assertThat(groupsData.toString()).contains(
+                "GroupContainer{group='Statement.execute:SELECT * from bla', OneContainer{invocationCount=1");
         profilingContainer.clear();
 
 
@@ -110,7 +116,7 @@ public class ProfilingDriverTest {
 
         Thread.sleep(100); // give profiling container time to summarize data
         groupsData = profilingContainer.getGroupData();
-        assertThat(groupsData).hasSize(3);
+        assertThat(groupsData).hasSize(4); // 3 normal, 1 SQL
         assertThat(groupsData.toString()).contains(
                 "[GroupContainer{group='Connection.prepareStatement', OneContainer{invocationCount=1");
         assertThat(groupsData.toString()).contains(

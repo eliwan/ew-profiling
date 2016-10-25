@@ -18,6 +18,7 @@ public class ProfilingInvocationHandler implements InvocationHandler {
 
     private String groupPrefix;
     private Object delegate;
+    private String query;
 
     /**
      * Constructor.
@@ -30,6 +31,19 @@ public class ProfilingInvocationHandler implements InvocationHandler {
         this.delegate = delegate;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param groupPrefix group prefix
+     * @param delegate the "real" prepared statement which is profiled.
+     * @param query query
+     */
+    public ProfilingInvocationHandler(String groupPrefix, Object delegate, String query) {
+        this.groupPrefix = groupPrefix;
+        this.delegate = delegate;
+        this.query = query;
+    }
+
     @Override
     // CHECKSTYLE THROWS_THROWABLE: OFF
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -37,14 +51,32 @@ public class ProfilingInvocationHandler implements InvocationHandler {
             return method.invoke(delegate, args);
         } else {
             long start = System.currentTimeMillis();
+            String query = extractQuery(method, args);
             try {
                 return method.invoke(delegate, args);
             } finally {
                 ProfilingDriver.register(groupPrefix + method.getName(), System.currentTimeMillis() - start);
+                if (null != query) {
+                    ProfilingDriver.registerQuery(groupPrefix + method.getName(), query, System.currentTimeMillis() - start);
+                }
             }
         }
     }
     // CHECKSTYLE THROWS_THROWABLE: ON
+
+    private String extractQuery(Method method, Object[] args) {
+        String res = null;
+        String methodName = method.getName();
+        if (("execute".equals(methodName) || "executeQuery".equals(methodName) || "executeUpdate".equals(methodName))
+                && null != args && 1 == args.length && args[0] instanceof String) {
+            res = (String) args[0];
+        }
+        if (("execute".equals(methodName) || "executeQuery".equals(methodName) || "executeUpdate".equals(methodName))
+                && (null == args || 0 == args.length)) {
+            res = query;
+        }
+        return res;
+    }
 
     private boolean isGetterOrSetter(Method method) {
         try {

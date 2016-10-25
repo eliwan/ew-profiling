@@ -21,4 +21,15 @@ public interface ProfilingListener {
      */
     void register(String group, long durationMillis);
 
+    /**
+     * Register a duration in milliseconds for running a JDBC method.
+     *
+     * @param group indication of type of command.
+     * @param query SQL query to register.
+     * @param durationMillis duration in milliseconds
+     */
+    default void registerQuery(String group, String query, long durationMillis) {
+        // nothing to do by default
+    }
+
 }

@@ -59,6 +59,22 @@ public class ProfilingDriver implements Driver {
         }
     }
 
+    /**
+     * Register a duration in milliseconds for running a JDBC method with specific query.
+     * <p>
+     * When a query is known, {@link #register(String, long)} is called first.
+     * </p>
+     *
+     * @param group indication of type of command.
+     * @param query the SQL query which is used
+     * @param durationMillis duration in milliseconds
+     */
+    static void registerQuery(String group, String query, long durationMillis) {
+        for (ProfilingListener listener : LISTENERS) {
+            listener.registerQuery(group, query, durationMillis);
+        }
+    }
+
     @Override
     public Connection connect(String s, Properties properties) throws SQLException {
         if (acceptsURL(s)) {
