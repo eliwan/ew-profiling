@@ -10,7 +10,7 @@
 
     <groupId>be.eliwan</groupId>
     <artifactId>ew-profiling</artifactId>
-    <version>1.4</version>
+    <version>1.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>ew-profiling project parent</name>
