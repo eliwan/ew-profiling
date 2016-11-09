@@ -17,7 +17,7 @@ access.
 
 [Main site with documentation](http://www.eliwan.be/oss/ew-profiling/)
 
-[javadoc](http://joachimvda.github.io/ew-profiling/)
+[javadoc](http://eliwan.github.io/ew-profiling/)
 
 
 Configuration
