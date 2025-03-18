@@ -189,11 +189,7 @@
                     <show>public</show>
                     <nohelp>true</nohelp>
                     <header>ew-profiling, ${project.version}</header>
-                    <footer>ew-profiling, ${project.version}</footer>
                     <doctitle>ew-profiling, ${project.version}</doctitle>
-                    <links>
-                        <link>http://static.springsource.org/spring/docs/3.0.x/javadoc-api/</link>
-                    </links>
                 </configuration>
             </plugin>
             <plugin>
