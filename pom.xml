@@ -9,6 +9,7 @@
 
     <name>ew-profiling project parent</name>
     <description>ew-profiling project grouping module</description>
+    <url>https://github.com/eliwan/ew-profiling/</url>
 
     <modules>
         <module>profiling-api</module>
