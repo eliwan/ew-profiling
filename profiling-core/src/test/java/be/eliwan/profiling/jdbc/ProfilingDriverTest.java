@@ -134,6 +134,30 @@ public class ProfilingDriverTest {
         profilingContainer.clear();
 
 
+        // test profiling a prepared statement
+
+        ps = connection.prepareStatement("SELECT NAME, VERSION as V from bla", Statement.RETURN_GENERATED_KEYS);
+        ps.execute();
+        ps.execute();
+        resultSet = ps.getResultSet();
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getString("NAME")).isEqualTo("zzz");
+        assertThat(resultSet.getInt("V")).isEqualTo(8);
+
+        Thread.sleep(100); // give profiling container time to summarize data
+        groupsData = profilingContainer.getGroupData();
+        assertThat(groupsData).hasSize(4); // 3 normal, 1 SQL
+        assertThat(groupsData.toString()).contains(
+                "[GroupContainer{group='Connection.prepareStatement', OneContainer{invocationCount=1,");
+        assertThat(groupsData.toString()).contains(
+                "GroupContainer{group='PreparedStatement.execute', OneContainer{invocationCount=2,");
+        assertThat(groupsData.toString()).contains(
+                "GroupContainer{group='PreparedStatement.getResultSet', OneContainer{invocationCount=1,");
+        assertThat(groupsData.toString()).contains(
+                "GroupContainer{group='PreparedStatement.execute:SELECT NAME, VERSION as V from bla', OneContainer{invocationCount=2,");
+        profilingContainer.clear();
+
+
         // test profiling a prepared statement with batch
 
         ps = connection.prepareStatement("INSERT INTO bla (NAME, VERSION) values (?, ?)");

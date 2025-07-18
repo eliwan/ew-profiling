@@ -40,12 +40,12 @@ public class ConnectionInvocationHandler implements InvocationHandler {
         } else {
             long start = System.currentTimeMillis();
             try {
-                if ("prepareCall".equals(method.getName()) && null != args && 1 == args.length && args[0] instanceof String) {
+                if ("prepareCall".equals(method.getName()) && null != args && 1 <= args.length && args[0] instanceof String) {
                     CallableStatement callableStatement = (CallableStatement) method.invoke(delegate, args);
                     return Proxy.newProxyInstance(callableStatement.getClass().getClassLoader(),
                             new Class[]{PreparedStatement.class},
                             new ProfilingInvocationHandler("CallableStatement.", callableStatement, (String) args[0]));
-                } else if ("prepareStatement".equals(method.getName()) && null != args && 1 == args.length && args[0] instanceof String) {
+                } else if ("prepareStatement".equals(method.getName()) && null != args && 1 <= args.length && args[0] instanceof String) {
                     PreparedStatement preparedStatement = (PreparedStatement) method.invoke(delegate, args);
                     return Proxy.newProxyInstance(preparedStatement.getClass().getClassLoader(),
                             new Class[]{PreparedStatement.class},
