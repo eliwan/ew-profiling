@@ -50,14 +50,15 @@ public class ProfilingInvocationHandler implements InvocationHandler {
         if (isGetterOrSetter(method)) {
             return method.invoke(delegate, args);
         } else {
+            String profilingQuery = extractQuery(method, args);
             long start = System.currentTimeMillis();
-            String query = extractQuery(method, args);
             try {
                 return method.invoke(delegate, args);
             } finally {
-                ProfilingDriver.register(groupPrefix + method.getName(), System.currentTimeMillis() - start);
-                if (null != query) {
-                    ProfilingDriver.registerQuery(groupPrefix + method.getName(), query, System.currentTimeMillis() - start);
+                long duration = System.currentTimeMillis() - start;
+                ProfilingDriver.register(groupPrefix + method.getName(), duration);
+                if (null != profilingQuery) {
+                    ProfilingDriver.registerQuery(groupPrefix + method.getName(), profilingQuery, duration);
                 }
             }
         }
@@ -67,13 +68,11 @@ public class ProfilingInvocationHandler implements InvocationHandler {
     private String extractQuery(Method method, Object[] args) {
         String res = null;
         String methodName = method.getName();
-        if (("execute".equals(methodName) || "executeQuery".equals(methodName) || "executeUpdate".equals(methodName))
-                && null != args && 1 == args.length && args[0] instanceof String) {
-            res = (String) args[0];
-        }
-        if (("execute".equals(methodName) || "executeQuery".equals(methodName) || "executeUpdate".equals(methodName))
-                && (null == args || 0 == args.length)) {
+        if (("execute".equals(methodName) || "executeQuery".equals(methodName) || "executeUpdate".equals(methodName) || "executeBatch".equals(methodName))) {
             res = query;
+            if (null != args && 1 == args.length && args[0] instanceof String) {
+                res = (String) args[0];
+            }
         }
         return res;
     }

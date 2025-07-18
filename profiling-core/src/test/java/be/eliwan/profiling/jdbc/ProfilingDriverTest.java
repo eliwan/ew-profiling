@@ -65,7 +65,6 @@ public class ProfilingDriverTest {
         return st.getResultSet();
     }
 
-
     @Test
     public void testProfilingDriver() throws Exception {
         // test registering connection
@@ -100,7 +99,14 @@ public class ProfilingDriverTest {
         assertThat(groupsData.toString()).contains(
                 "GroupContainer{group='Statement.getResultSet', OneContainer{invocationCount=3");
         assertThat(groupsData.toString()).contains(
-                "GroupContainer{group='Statement.execute:SELECT * from bla', OneContainer{invocationCount=1");
+                "GroupContainer{group='Statement.execute:SELECT * from bla', OneContainer{invocationCount=1,");
+        assertThat(groupsData.toString()).contains(
+                "GroupContainer{group='Statement.execute:INSERT INTO bla (NAME, VERSION) values ('zzz', 8)', OneContainer{invocationCount=1,");
+        assertThat(groupsData.toString()).contains(
+                "GroupContainer{group='Statement.execute:CREATE TABLE bla (\n"
+                        + "VERSION INTEGER,\n"
+                        + "NAME VARCHAR(255)\n"
+                        + ");', OneContainer{invocationCount=1,");
         profilingContainer.clear();
 
 
@@ -118,11 +124,39 @@ public class ProfilingDriverTest {
         groupsData = profilingContainer.getGroupData();
         assertThat(groupsData).hasSize(4); // 3 normal, 1 SQL
         assertThat(groupsData.toString()).contains(
-                "[GroupContainer{group='Connection.prepareStatement', OneContainer{invocationCount=1");
+                "[GroupContainer{group='Connection.prepareStatement', OneContainer{invocationCount=1,");
         assertThat(groupsData.toString()).contains(
-                "GroupContainer{group='PreparedStatement.execute', OneContainer{invocationCount=2");
+                "GroupContainer{group='PreparedStatement.execute', OneContainer{invocationCount=2,");
         assertThat(groupsData.toString()).contains(
-                "GroupContainer{group='PreparedStatement.getResultSet', OneContainer{invocationCount=1");
+                "GroupContainer{group='PreparedStatement.getResultSet', OneContainer{invocationCount=1,");
+        assertThat(groupsData.toString()).contains(
+                "GroupContainer{group='PreparedStatement.execute:SELECT NAME, VERSION as V from bla', OneContainer{invocationCount=2,");
+        profilingContainer.clear();
+
+
+        // test profiling a prepared statement with batch
+
+        ps = connection.prepareStatement("INSERT INTO bla (NAME, VERSION) values (?, ?)");
+        ps.setString(1, "val-1");
+        ps.setInt(2, 9);
+        ps.addBatch();
+        ps.setString(1, "val-2");
+        ps.setInt(2, 10);
+        ps.addBatch();
+        int[] batchResult = ps.executeBatch();
+        assertThat(batchResult).containsExactly(1, 1);
+
+        Thread.sleep(100); // give profiling container time to summarize data
+        groupsData = profilingContainer.getGroupData();
+        assertThat(groupsData).hasSize(4); // 3 normal, 1 SQL
+        assertThat(groupsData.toString()).contains(
+                "[GroupContainer{group='Connection.prepareStatement', OneContainer{invocationCount=1,");
+        assertThat(groupsData.toString()).contains(
+                "GroupContainer{group='PreparedStatement.addBatch', OneContainer{invocationCount=2,");
+        assertThat(groupsData.toString()).contains(
+                "GroupContainer{group='PreparedStatement.executeBatch', OneContainer{invocationCount=1,");
+        assertThat(groupsData.toString()).contains(
+                "GroupContainer{group='PreparedStatement.executeBatch:INSERT INTO bla (NAME, VERSION) values (?, ?)', OneContainer{invocationCount=1");
         profilingContainer.clear();
     }
 

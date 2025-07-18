@@ -14,6 +14,8 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * Test to assure ProfilingContainer has good throughput and does not slow down the app too much.
  */
@@ -59,6 +61,7 @@ public class ProfilingContainerTest {
         System.out.print("DONE");
         output(container);
         System.out.println("Total run time (in ms): " + (System.currentTimeMillis() - start));
+        assertThat(container.getGroupData()).isNotEmpty();
     }
 
     private void output(ProfilingContainer container) {
